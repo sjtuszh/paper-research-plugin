@@ -1,0 +1,8 @@
+{
+  "name": "paper-research-plugin",
+  "description": "智能论文检索插件 — 自动发现综述/前沿/方法三类文献，打通 Semantic Scholar + arXiv + CNKI + ScienceDirect",
+  "author": {
+    "name": "paper-research"
+  },
+  "version": "1.0.0"
+}
