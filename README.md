@@ -15,28 +15,56 @@
 
 ## 安装
 
+### 第一步：克隆插件（含 CNKI + ScienceDirect 技能）
+
 ```bash
-# 1. 克隆本插件
-git clone <repo-url> ~/.claude/plugins/paper-research-plugin
-
-# 2. (可选) 安装 CNKI 技能 — 中文文献
-git clone https://github.com/cookjohn/cnki-skills /tmp/cnki-skills
-cp -r /tmp/cnki-skills/skills/* ~/.claude/skills/
-cp -r /tmp/cnki-skills/agents/* ~/.claude/agents/
-
-# 3. (可选) 安装 ScienceDirect 技能 — 外文闭源文献
-git clone https://github.com/cookjohn/sd-skills /tmp/sd-skills
-cp -r /tmp/sd-skills/skills/* ~/.claude/skills/
-cp -r /tmp/sd-skills/agents/* ~/.claude/agents/
-
-# 4. 配置 Chrome DevTools MCP（闭源文献需要）
-claude mcp add chrome-devtools -- npx -y chrome-devtools-mcp@latest
-
-# 5. 启动 Chrome 远程调试（Windows）
-"C:\Program Files\Google\Chrome\Application\chrome.exe" --remote-debugging-port=9222
-
-# 6. 在校园网/VPN 下登录知网和 ScienceDirect，确认机构认证
+git clone https://github.com/sjtuszh/paper-research-plugin.git ~/.claude/plugins/paper-research-plugin
 ```
+
+> 本插件已内置 cookjohn/cnki-skills 和 cookjohn/sd-skills，无需单独安装。
+
+### 第二步：配置 Chrome DevTools MCP（闭源文献下载必需）
+
+```bash
+claude mcp add chrome-devtools -- npx -y chrome-devtools-mcp@latest
+```
+
+配置后会在 `.claude.json` 中添加以下内容（也可手动写入）：
+
+```json
+{
+  "mcpServers": {
+    "chrome-devtools": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "chrome-devtools-mcp@latest",
+        "--ignoreDefaultChromeArg=--enable-automation",
+        "--ignoreDefaultChromeArg=--disable-infobars",
+        "--chromeArg=--disable-blink-features=AutomationControlled"
+      ]
+    }
+  }
+}
+```
+
+### 第三步：启动浏览器远程调试
+
+**Edge（推荐）：**
+```bash
+"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe" --remote-debugging-port=9222 --remote-allow-origins=*
+```
+
+**Chrome：**
+```bash
+"C:\Program Files\Google\Chrome\Application\chrome.exe" --remote-debugging-port=9222 --remote-allow-origins=*
+```
+
+> ⚠️ 首次启动后，在浏览器中登录 ScienceDirect 或知网，确认右上角显示学校机构名称。
+
+### 第四步：开始使用
+
+启动 Claude Code，插件技能自动加载。输入 `/paper-search` 测试。
 
 ## 使用示例
 
@@ -53,19 +81,52 @@ claude mcp add chrome-devtools -- npx -y chrome-devtools-mcp@latest
 # 统一入口
 /paper-search 我在做 LLM 推理加速，用 Speculative Decoding，效果不理想
 
-# 获取全文
-/paper-fetch "Attention Is All You Need"
+# 下载闭源论文（需校园网 + 浏览器远程调试）
+/sd-download S0021967325002304
 ```
+
+## 闭源论文下载流程（以 ScienceDirect 为例）
+
+1. 确认校园网/VPN 已连通
+2. 启动 Edge/Chrome 远程调试（见第三步）
+3. 在浏览器中打开 ScienceDirect，确认机构登录
+4. 在 Claude Code 中通过 `/sd-download {PII}` 下载
+5. 脚本会自动：导航到论文页 → 提取 PDF 链接 → 触发保存到本地
+
+实际测试验证的论文（2026-05-05）：
+- `10.1016/j.talanta.2020.121427` — Talanta, 2021 ✅
+- `10.1016/j.chroma.2025.465882` — J. Chromatography A, 2025 ✅
 
 ## 架构
 
 ```
 用户提问 → paper-researcher Agent
-  ├── OA 路径: Semantic Scholar API + arXiv API
+  ├── OA 路径: Semantic Scholar API + arXiv API（无需配置）
   └── 闭源路径: CNKI (cnki-skills) + ScienceDirect (sd-skills)
+                （需 Chrome DevTools MCP + 校园网/VPN + 浏览器远程调试）
 ```
 
 ## 依赖
 
-- 开放获取检索：无需额外配置
-- 闭源文献检索：需 Chrome DevTools MCP + 校园网/VPN + cnki-skills / sd-skills
+| 功能 | 依赖 |
+|------|------|
+| 开放获取检索（Semantic Scholar / arXiv） | 无需额外配置 |
+| CNKI 中文文献检索 | 校园网/VPN + 浏览器远程调试 |
+| ScienceDirect 外文文献检索 | 校园网/VPN + 浏览器远程调试 |
+| 文献下载 | 上述 + Chrome DevTools MCP |
+
+## 技能清单
+
+| 命令 | 来源 | 功能 |
+|------|------|------|
+| `/paper-search` | 本插件 | 智能统一检索入口 |
+| `/paper-survey` | 本插件 | 综述文献检索 |
+| `/paper-frontier` | 本插件 | 前沿文献检索 |
+| `/paper-methods` | 本插件 | 方法文献检索 |
+| `/paper-fetch` | 本插件 | 全文获取指引 |
+| `/cnki-search` | cnki-skills | 知网关键词检索 |
+| `/cnki-advanced-search` | cnki-skills | 知网高级检索 |
+| `/cnki-download` | cnki-skills | 知网 PDF/CAJ 下载 |
+| `/sd-search` | sd-skills | ScienceDirect 检索 |
+| `/sd-download` | sd-skills | ScienceDirect PDF 下载 |
+| etc. | cnki/sd-skills | 共 18 个技能 + 3 个 Agent |
