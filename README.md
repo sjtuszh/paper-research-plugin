@@ -83,19 +83,40 @@ claude mcp add chrome-devtools -- npx -y chrome-devtools-mcp@latest
 
 # 下载闭源论文（需校园网 + 浏览器远程调试）
 /sd-download S0021967325002304
+/cnki-download "矿石样品前处理自动化仪器控制系统开发"
+/cnki-search 样品前处理自动化
 ```
 
-## 闭源论文下载流程（以 ScienceDirect 为例）
+## 闭源论文下载流程
+
+### ScienceDirect（外文）
 
 1. 确认校园网/VPN 已连通
-2. 启动 Edge/Chrome 远程调试（见第三步）
+2. 启动 Edge/Chrome 远程调试
 3. 在浏览器中打开 ScienceDirect，确认机构登录
 4. 在 Claude Code 中通过 `/sd-download {PII}` 下载
-5. 脚本会自动：导航到论文页 → 提取 PDF 链接 → 触发保存到本地
+5. 自动：导航到论文页 → 提取 PDF 链接 → 触发保存到本地
 
-实际测试验证的论文（2026-05-05）：
-- `10.1016/j.talanta.2020.121427` — Talanta, 2021 ✅
-- `10.1016/j.chroma.2025.465882` — J. Chromatography A, 2025 ✅
+### CNKI 知网（中文）
+
+1. 确认校园网/VPN 已连通
+2. 启动 Edge/Chrome 远程调试
+3. 在浏览器中打开 https://www.cnki.net，确认机构登录
+4. 在 Claude Code 中通过 `/cnki-search` 检索或 `/cnki-download` 下载
+5. 自动：搜索 → 提取结果 → 进入详情 → 点击下载按钮 → PDF 保存到本地
+
+## 实际测试验证（2026-05-05）
+
+### ScienceDirect
+| DOI | 期刊 | 年份 | 状态 |
+|-----|------|------|------|
+| `10.1016/j.talanta.2020.121427` | Talanta | 2021 | ✅ PDF (3.0 MB) |
+| `10.1016/j.chroma.2025.465882` | J. Chromatography A | 2025 | ✅ PDF (3.4 MB) |
+
+### CNKI 知网
+| 题名 | 期刊 | 年份 | 状态 |
+|------|------|------|------|
+| 矿石样品前处理自动化仪器控制系统开发 | 中国矿业 | 2020 | ✅ PDF (1.2 MB) |
 
 ## 架构
 
@@ -125,8 +146,20 @@ claude mcp add chrome-devtools -- npx -y chrome-devtools-mcp@latest
 | `/paper-methods` | 本插件 | 方法文献检索 |
 | `/paper-fetch` | 本插件 | 全文获取指引 |
 | `/cnki-search` | cnki-skills | 知网关键词检索 |
-| `/cnki-advanced-search` | cnki-skills | 知网高级检索 |
+| `/cnki-advanced-search` | cnki-skills | 知网高级检索（SCI/EI/CSSCI/核心） |
 | `/cnki-download` | cnki-skills | 知网 PDF/CAJ 下载 |
+| `/cnki-paper-detail` | cnki-skills | 知网论文摘要/关键词提取 |
+| `/cnki-journal-search` | cnki-skills | 期刊查找（ISSN / 名称） |
+| `/cnki-journal-index` | cnki-skills | 期刊收录/影响因子查询 |
+| `/cnki-journal-toc` | cnki-skills | 期刊目录浏览 |
+| `/cnki-navigate-pages` | cnki-skills | 翻页/排序 |
+| `/cnki-export` | cnki-skills | 导出引用 / Zotero |
 | `/sd-search` | sd-skills | ScienceDirect 检索 |
+| `/sd-advanced-search` | sd-skills | ScienceDirect 高级检索 |
 | `/sd-download` | sd-skills | ScienceDirect PDF 下载 |
-| etc. | cnki/sd-skills | 共 18 个技能 + 3 个 Agent |
+| `/sd-paper-detail` | sd-skills | 论文元数据提取 |
+| `/sd-journal-browse` | sd-skills | 期刊浏览 |
+| `/sd-export` | sd-skills | 导出引用 / Zotero |
+| **Agent: paper-researcher** | 本插件 | 自动调度检索全流程 |
+| **Agent: cnki-researcher** | cnki-skills | 知网研究助手 |
+| **Agent: sd-researcher** | sd-skills | ScienceDirect 研究助手 |
