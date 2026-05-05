@@ -1,17 +1,37 @@
 # Paper Research Plugin
 
-智能论文检索插件 — 自动发现综述/前沿/方法三类文献，打通开放获取（Semantic Scholar + arXiv）和校园网闭源（CNKI + ScienceDirect）的全链路检索。
+智能论文检索插件 — 两阶段操作：（1）**检索阶段** 跨 Semantic Scholar、ScienceDirect、IEEE、arXiv、PubMed、CNKI 找论文；（2）**获取阶段** 开放获取优先，校园网闭源兜底。
+
+## 两阶段逻辑
+
+```
+用户提问
+   │
+   ▼
+paper-researcher agent 分析意图
+   │
+   ├─ 检索意图 → 选数据源 → 并行搜索 → 评估摘要 → 汇总
+   │
+   └─ 获取意图 → 识别论文 → OA优先 → 校园网兜底 → 下载
+```
+
+## 数据源优先级
+
+**通用优先级：** Semantic Scholar → ScienceDirect → IEEE → arXiv → PubMed → CNKI
+**工业工程/自动化：** IEEE → Semantic Scholar → arXiv → ScienceDirect → CNKI
 
 ## 功能
 
 | 命令 | 功能 |
 |------|------|
-| `/paper-search <topic>` | 统一入口，智能判断需要综述/前沿/方法 |
+| `/paper-search <topic>` | 多源检索（自动选数据源） |
 | `/paper-survey <topic>` | 查找综述文献 |
 | `/paper-frontier <topic>` | 查找前沿研究 |
 | `/paper-methods <problem>` | 查找可参考方法 |
-| `/paper-fetch <title>` | 获取全文指引 |
-| **Agent: paper-researcher** | 自动理解需求并调度整个流程 |
+| `/paper-fetch <title/DOI/PMID>` | 获取全文（OA→校园网） |
+| `/pubmed-search <query>` | PubMed 生物医学检索 |
+| `/pubmed-fetch <PMID>` | PubMed Central 全文获取 |
+| **Agent: paper-researcher** | 自动判断检索/获取，调度全流程 |
 
 ## 安装
 
